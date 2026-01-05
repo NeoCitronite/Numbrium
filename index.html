@@ -348,14 +348,14 @@
     const rows = N + 1;
 
     // Padding around board inside canvas
-    const pad = 10;
+    const pad = 6;
     const usableW = w - pad*2;
     const usableH = h - pad*2;
 
     // gap between cells
-    const gap = (N === 4) ? 4 : 6;
+    const gap = (N === 4) ? 6 : 8;
 
-    // compute cell size to fit both dimensions
+    // compute cell size to fit both dimensions (uses maximum size without clipping)
     const cellW = (usableW - gap*(cols-1)) / cols;
     const cellH = (usableH - gap*(rows-1)) / rows;
     const cell = Math.floor(Math.min(cellW, cellH));
