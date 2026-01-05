@@ -6,7 +6,7 @@
   <title>Numbrium</title>
   <style>
     :root{
-      --cell: 56px;
+      --cell: 48px;
       --gap: 6px;
       --radius: 14px;
       --shadow: 0 10px 30px rgba(0,0,0,.12);
@@ -720,7 +720,15 @@
     render();
   }
 
-  function setMode(key){
+  
+    // Adjust tile size by grid size
+    if (N === 4) {
+      document.documentElement.style.setProperty("--cell", "44px");
+    } else {
+      document.documentElement.style.setProperty("--cell", "48px");
+    }
+
+function setMode(key){
     modeKey = key;
     N = MODES[modeKey].N;
     maxAbs = MODES[modeKey].maxAbs;
@@ -758,6 +766,7 @@
 </script>
 </body>
 </html>
+
 
 
 
