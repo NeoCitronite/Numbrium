@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Numbrium</title>
+  <style>
+    :root{
+      --cell: 76px;
+      --gap: 10px;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.12);
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.16);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(1000px 700px at 30% 20%, #1b2a6b 0%, transparent 55%),
+                  radial-gradient(900px 650px at 70% 70%, #5a1c5f 0%, transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 24px;
+    }
+    .app{
+      width:min(640px, 100%);
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+    header{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 14px;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .title h1{
+      font-size:18px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    button{
+      appearance:none;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 650;
+      letter-spacing:.2px;
+      transition: transform .06s ease, background .2s ease;
+    }
+    button:hover{ background: rgba(255,255,255,.12); }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      background: rgba(120,200,255,.18);
+      border-color: rgba(120,200,255,.30);
+    }
+    .stats{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin: 10px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .pill{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      padding: 8px 10px;
+      border-radius: 999px;
+    }
+
+    /* BOARD */
+    .boardWrap{
+      display:flex;
+      justify-content:center;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.16);
+      overflow-x:auto;
+    }
+
+    /* columns = N tiles + 1 sums column */
+    .grid{
+      display:grid;
+      gap: var(--gap);
+      align-items:center;
+      justify-items:center;
+    }
+
+    .tile, .sumCell, .corner{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: var(--radius);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      position:relative;
+    }
+
+    .tile{
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      font-size: 20px;
+      font-weight: 850;
+      cursor:pointer;
+      transition: background .2s ease, border-color .2s ease;
+      will-change: transform;
+    }
+    .tile:hover{ background: rgba(255,255,255,.14); }
+    .tile.selected{
+      outline: 3px solid rgba(120,200,255,.55);
+      border-color: rgba(120,200,255,.55);
+      background: rgba(120,200,255,.14);
+    }
+
+    /* value coloring: buckets based on sign/magnitude */
+    .tile.neg2 { color: rgba(255,120,120,.95); }  /* <= -2 */
+    .tile.neg1 { color: rgba(255,160,160,.95); }  /* -1 */
+    .tile.zero { color: rgba(255,255,255,.92); }  /* 0 */
+    .tile.pos1 { color: rgba(170,255,190,.95); }  /* +1 */
+    .tile.pos2 { color: rgba(120,255,170,.95); }  /* >= +2 */
+
+    .sumCell{
+      border: 1px dashed rgba(255,255,255,.20);
+      background: rgba(255,255,255,.05);
+      font-weight: 850;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .sumCell.ok{
+      border-style: solid;
+      border-color: rgba(170,255,190,.40);
+      color: rgba(170,255,190,.95);
+      background: rgba(170,255,190,.08);
+    }
+    .sumCell.bad{
+      border-style: solid;
+      border-color: rgba(255,160,160,.40);
+      color: rgba(255,160,160,.95);
+      background: rgba(255,160,160,.08);
+    }
+
+    .corner{
+      border: 1px solid transparent;
+      background: transparent;
+      color: rgba(255,255,255,.35);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .hint{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .hint code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(255,255,255,.10);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.16);
+      color: var(--text);
+    }
+
+    /* MODAL */
+    .modalBackdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 24px;
+    }
+    .modal{
+      width: min(420px, 100%);
+      background: rgba(18,24,46,.92);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+    .modal h2{ margin: 0 0 6px; font-size: 20px; }
+    .modal p{ margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+    .modal .row{
+      display:flex;
+      gap: 10px;
+      justify-content:flex-end;
+    }
+
+    /* swap animation helper */
+    .tile.animating{
+      transition: transform 220ms ease;
+      z-index: 10;
+    }
+
+    /* on small screens, shrink */
+    @media (max-width: 480px){
+      :root{ --cell: 66px; --gap: 8px; }
+      .tile{ font-size: 18px; }
+    }
+
+    .copyright{
+      margin-top: 14px;
+      text-align: center;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+      padding: 6px 0 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>Numbrium (Zero-Sum Swap Puzzle)</h1>
+        <p>Swap adjacent tiles until every row and column sums to <b>0</b>.</p>
+      </div>
+
+      <div class="controls">
+        <button id="easyBtn" class="primary">Easy (3×3, −1..+1)</button>
+        <button id="medBtn">Medium (4×4, −2..+2)</button>
+        <button id="hardBtn">Hard (4×4, −4..+4)</button>
+        <button id="newBtn">New Puzzle</button>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="pill">Mode: <span id="modeLabel">Easy</span></div>
+      <div class="pill">Size: <span id="sizeLabel">3×3</span></div>
+      <div class="pill">Range: <span id="rangeLabel">−1..+1</span></div>
+      <div class="pill">Moves: <span id="movesLabel">0</span></div>
+    </div>
+
+    <div class="boardWrap">
+      <div id="grid" class="grid" aria-label="puzzle grid"></div>
+    </div>
+
+    <div class="hint">
+      Click a tile to select it, then click an <b>adjacent</b> tile to swap.
+      Row totals are on the <code>right</code> and column totals are on the <code>bottom</code>.
+    </div>
+    <footer class="copyright">
+     Copyright © 2026 Numbrium.com.  All Rights Reserved
+    </footer>
+  </div>
+
+  <div id="modalBackdrop" class="modalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>🎉 You win!</h2>
+      <p id="winText">All rows and columns sum to zero.</p>
+      <div class="row">
+        <button id="closeModalBtn">Close</button>
+        <button id="playAgainBtn" class="primary">Play again</button>
+      </div>
+    </div>
+    
+
+  </div>
+
+
+
+<script>
+(() => {
+  // -------- Modes --------
+  // Easy: 3x3, maxAbs=1
+  // Medium: 4x4, maxAbs=2
+  // Hard: 4x4, maxAbs=4
+  const MODES = {
+    easy:  { name:"Easy",   N:3, maxAbs:1, shuffle: 70  },
+    medium:{ name:"Medium", N:4, maxAbs:2, shuffle: 180 },
+    hard:  { name:"Hard",   N:4, maxAbs:4, shuffle: 260 },
+  };
+
+  // -------- State --------
+  let modeKey = "easy";
+  let N = MODES[modeKey].N;
+  let maxAbs = MODES[modeKey].maxAbs;
+
+  let board = [];            // NxN numbers
+  let moves = 0;
+  let selected = null;       // {r,c} or null
+  let busy = false;          // block input during animation
+
+  // -------- DOM --------
+  const gridEl = document.getElementById("grid");
+  const movesLabel = document.getElementById("movesLabel");
+  const sizeLabel = document.getElementById("sizeLabel");
+  const modeLabel = document.getElementById("modeLabel");
+  const rangeLabel = document.getElementById("rangeLabel");
+
+  const easyBtn = document.getElementById("easyBtn");
+  const medBtn  = document.getElementById("medBtn");
+  const hardBtn = document.getElementById("hardBtn");
+  const newBtn  = document.getElementById("newBtn");
+
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const winText = document.getElementById("winText");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const playAgainBtn = document.getElementById("playAgainBtn");
+
+  // -------- Helpers --------
+  const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function allowedValues() {
+    const vals = [];
+    for (let v = -maxAbs; v <= maxAbs; v++) vals.push(v);
+    return vals;
+  }
+  function inRange(v) { return Math.abs(v) <= maxAbs; }
+
+  function computeRowSums(b) {
+    return b.map(row => row.reduce((a,v)=>a+v,0));
+  }
+  function computeColSums(b) {
+    const sums = Array.from({length: b.length}, () => 0);
+    for (let r=0; r<b.length; r++) for (let c=0; c<b.length; c++) sums[c] += b[r][c];
+    return sums;
+  }
+  function isWin(b) {
+    const rs = computeRowSums(b);
+    const cs = computeColSums(b);
+    return rs.every(x => x === 0) && cs.every(x => x === 0);
+  }
+
+  // -------- Guaranteed-solvable generator --------
+  // Construct a valid "solved" board with row/col sums 0 under bounds [-maxAbs..maxAbs]
+  function generateSolvedBoard() {
+    const choices = allowedValues();
+
+    for (let attempt=0; attempt<12000; attempt++) {
+      const b = Array.from({length:N}, () => Array.from({length:N}, () => 0));
+
+      // Fill (N-1)x(N-1)
+      for (let r=0; r<N-1; r++) {
+        for (let c=0; c<N-1; c++) {
+          b[r][c] = randPick(choices);
+        }
+      }
+
+      // Set last column to make each of first N-1 rows sum to 0
+      let ok = true;
+      for (let r=0; r<N-1; r++) {
+        const s = b[r].slice(0, N-1).reduce((a,v)=>a+v,0);
+        const need = -s;
+        if (!inRange(need)) { ok = false; break; }
+        b[r][N-1] = need;
+      }
+      if (!ok) continue;
+
+      // Set last row to make each of first N-1 cols sum to 0
+      for (let c=0; c<N-1; c++) {
+        let s = 0;
+        for (let r=0; r<N-1; r++) s += b[r][c];
+        const need = -s;
+        if (!inRange(need)) { ok = false; break; }
+        b[N-1][c] = need;
+      }
+      if (!ok) continue;
+
+      // Bottom-right must satisfy both last row and last col
+      let colSumLast = 0;
+      for (let r=0; r<N-1; r++) colSumLast += b[r][N-1];
+      const needFromCol = -colSumLast;
+
+      let rowSumLast = 0;
+      for (let c=0; c<N-1; c++) rowSumLast += b[N-1][c];
+      const needFromRow = -rowSumLast;
+
+      if (needFromCol !== needFromRow) continue;
+      if (!inRange(needFromCol)) continue;
+
+      b[N-1][N-1] = needFromCol;
+
+      // avoid trivial all-zeros
+      if (b.flat().every(v => v === 0)) continue;
+
+      if (isWin(b)) return b;
+    }
+
+    // fallback (valid patterns)
+    if (N === 3 && maxAbs >= 1) {
+      return [
+        [ 1,  0, -1],
+        [-1,  1,  0],
+        [ 0, -1,  1]
+      ];
+    }
+    if (N === 4 && maxAbs >= 2) {
+      return [
+        [ 2,  0, -2,  0],
+        [ 0,  2,  0, -2],
+        [-2,  0,  2,  0],
+        [ 0, -2,  0,  2]
+      ];
+    }
+    // 4x4 valid for maxAbs >= 4
+    return [
+      [ 4,  0, -4,  0],
+      [ 0,  4,  0, -4],
+      [-4,  0,  4,  0],
+      [ 0, -4,  0,  4]
+    ];
+  }
+
+  // Shuffle using adjacent swaps so puzzle is always solvable
+  function shuffleFromSolved(solved, swapsCount) {
+    const b = solved.map(row => row.slice());
+    const dirs = [
+      {dr:1, dc:0},
+      {dr:-1, dc:0},
+      {dr:0, dc:1},
+      {dr:0, dc:-1},
+    ];
+
+    function swapCells(r1,c1,r2,c2){
+      const t = b[r1][c1];
+      b[r1][c1] = b[r2][c2];
+      b[r2][c2] = t;
+    }
+
+    for (let k=0; k<swapsCount; k++){
+      const r = Math.floor(Math.random()*N);
+      const c = Math.floor(Math.random()*N);
+      const d = randPick(dirs);
+      const r2 = r + d.dr, c2 = c + d.dc;
+      if (r2<0 || r2>=N || c2<0 || c2>=N) continue;
+      swapCells(r,c,r2,c2);
+    }
+
+    // avoid starting solved
+    if (isWin(b)) return shuffleFromSolved(solved, swapsCount + N*N);
+    return b;
+  }
+
+  // -------- Rendering --------
+  function valueText(v){
+    return v > 0 ? `+${v}` : String(v);
+  }
+  function tileBucketClass(v){
+    if (v <= -2) return "neg2";
+    if (v === -1) return "neg1";
+    if (v === 0)  return "zero";
+    if (v === 1)  return "pos1";
+    return "pos2"; // >= +2
+  }
+
+  function render() {
+    gridEl.innerHTML = "";
+    gridEl.style.gridTemplateColumns = `repeat(${N + 1}, var(--cell))`;
+
+    const rowSums = computeRowSums(board);
+    const colSums = computeColSums(board);
+
+    for (let r=0; r<N; r++) {
+      for (let c=0; c<N; c++) {
+        const cell = document.createElement("div");
+        cell.className = `tile ${tileBucketClass(board[r][c])}`;
+        cell.textContent = valueText(board[r][c]);
+
+        if (selected && selected.r === r && selected.c === c) {
+          cell.classList.add("selected");
+        }
+
+        cell.dataset.r = String(r);
+        cell.dataset.c = String(c);
+        cell.addEventListener("click", onTileClick);
+        gridEl.appendChild(cell);
+      }
+
+      // Row sum on the right
+      const sum = rowSums[r];
+      const sumEl = document.createElement("div");
+      sumEl.className = `sumCell ${sum === 0 ? "ok" : "bad"}`;
+      sumEl.textContent = sum;
+      sumEl.title = "Row total";
+      gridEl.appendChild(sumEl);
+    }
+
+    // Column sums on bottom
+    for (let c=0; c<N; c++) {
+      const sum = colSums[c];
+      const sumEl = document.createElement("div");
+      sumEl.className = `sumCell ${sum === 0 ? "ok" : "bad"}`;
+      sumEl.textContent = sum;
+      sumEl.title = "Column total";
+      gridEl.appendChild(sumEl);
+    }
+
+    // Bottom-right corner
+    const corner = document.createElement("div");
+    corner.className = "corner";
+    corner.textContent = "Σ";
+    gridEl.appendChild(corner);
+
+    movesLabel.textContent = String(moves);
+    sizeLabel.textContent = `${N}×${N}`;
+    modeLabel.textContent = MODES[modeKey].name;
+    rangeLabel.textContent = `−${maxAbs}..+${maxAbs}`;
+  }
+
+  // -------- Interaction + Animation --------
+  function isAdjacent(a, b) {
+    const dr = Math.abs(a.r - b.r);
+    const dc = Math.abs(a.c - b.c);
+    return (dr + dc) === 1;
+  }
+
+  function getTileEl(r,c){
+    return gridEl.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
+  }
+
+  function doSwapWithAnimation(a, b) {
+    if (busy) return;
+    busy = true;
+
+    const elA = getTileEl(a.r, a.c);
+    const elB = getTileEl(b.r, b.c);
+    if (!elA || !elB) { busy = false; return; }
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const cell = parseInt(rootStyles.getPropertyValue("--cell"), 10);
+    const gap  = parseInt(rootStyles.getPropertyValue("--gap"), 10);
+
+    const dx = (b.c - a.c) * (cell + gap);
+    const dy = (b.r - a.r) * (cell + gap);
+
+    elA.classList.add("animating");
+    elB.classList.add("animating");
+
+    elA.style.transform = `translate(${dx}px, ${dy}px)`;
+    elB.style.transform = `translate(${-dx}px, ${-dy}px)`;
+
+    setTimeout(() => {
+      // swap values
+      const t = board[a.r][a.c];
+      board[a.r][a.c] = board[b.r][b.c];
+      board[b.r][b.c] = t;
+
+      moves += 1;
+      selected = null;
+
+      // cleanup
+      elA.style.transform = "";
+      elB.style.transform = "";
+      elA.classList.remove("animating");
+      elB.classList.remove("animating");
+
+      render();
+
+      if (isWin(board)) showWinModal();
+      busy = false;
+    }, 240);
+  }
+
+  function onTileClick(e) {
+    if (busy) return;
+
+    const r = parseInt(e.currentTarget.dataset.r, 10);
+    const c = parseInt(e.currentTarget.dataset.c, 10);
+
+    if (!selected) {
+      selected = {r,c};
+      render();
+      return;
+    }
+
+    if (selected.r === r && selected.c === c) {
+      selected = null;
+      render();
+      return;
+    }
+
+    const target = {r,c};
+    if (isAdjacent(selected, target)) {
+      doSwapWithAnimation(selected, target);
+    } else {
+      selected = target;
+      render();
+    }
+  }
+
+  // -------- Modal --------
+  function showWinModal(){
+    winText.textContent = `Solved! Moves: ${moves}.`;
+    modalBackdrop.style.display = "flex";
+  }
+  function hideWinModal(){
+    modalBackdrop.style.display = "none";
+  }
+
+  // -------- New Game --------
+  function newGame() {
+    hideWinModal();
+    selected = null;
+    moves = 0;
+
+    const solved = generateSolvedBoard();
+    const shuffleCount = MODES[modeKey].shuffle;
+    board = shuffleFromSolved(solved, shuffleCount);
+
+    render();
+  }
+
+  function setMode(key){
+    modeKey = key;
+    N = MODES[modeKey].N;
+    maxAbs = MODES[modeKey].maxAbs;
+
+    easyBtn.classList.toggle("primary", modeKey === "easy");
+    medBtn.classList.toggle("primary", modeKey === "medium");
+    hardBtn.classList.toggle("primary", modeKey === "hard");
+
+    newGame();
+  }
+
+  // -------- Wire up UI --------
+  easyBtn.addEventListener("click", () => setMode("easy"));
+  medBtn.addEventListener("click",  () => setMode("medium"));
+  hardBtn.addEventListener("click", () => setMode("hard"));
+  newBtn.addEventListener("click", newGame);
+
+  closeModalBtn.addEventListener("click", hideWinModal);
+  playAgainBtn.addEventListener("click", newGame);
+  modalBackdrop.addEventListener("click", (e) => {
+    if (e.target === modalBackdrop) hideWinModal();
+  });
+
+  // Start
+  setMode("easy");
+})();
+</script>
+</body>
+</html>
