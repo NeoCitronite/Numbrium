@@ -134,12 +134,10 @@
     .boardWrap{
       display:flex;
       justify-content:center;
-      padding: 14px;
-      border-radius: 20px;
-      border: 1px solid var(--stroke);
-      background: rgba(0,0,0,.16);
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      overflow-x:auto;
     }
 
     /* columns = N tiles + 1 sums column */
@@ -165,8 +163,10 @@
     }
 
     .tile{
-      border: 2px solid rgba(255,255,255,.25);
-      border: 1px solid rgba(255,255,255,.18);
+      border: none;
+      outline: none;
+      border: none;
+      border: none;
       background: rgba(255,255,255,.10);
       font-size: clamp(16px, 2.6vw, 20px);
       font-weight: 850;
@@ -178,8 +178,6 @@
     }
     .tile:hover{ background: rgba(255,255,255,.14); }
     .tile.selected{
-      outline: 3px solid rgba(120,200,255,.55);
-      border-color: rgba(120,200,255,.55);
       background: rgba(120,200,255,.14);
     }
 
@@ -762,6 +760,3 @@
 </script>
 </body>
 </html>
-
-
-
