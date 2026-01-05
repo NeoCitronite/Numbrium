@@ -95,13 +95,16 @@
       align-items:center;
       justify-content:center;
       min-height: 240px;
+      overflow: hidden;
+      padding: 6px;
     }
     canvas{
-      width: 100%;
-      height: 100%;
-      max-width: 740px;
-      max-height: 740px;
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
       touch-action: manipulation;
+      display:block;
     }
     footer{
       text-align:center;
@@ -329,38 +332,59 @@
 
   // ---------- Canvas sizing & layout ----------
   function resizeCanvas() {
-    // Canvas element is sized via CSS to available stage, so measure it
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS pixels
-    computeLayout();
-    draw();
-  }
+    // Measure available stage space (for initial fit calculations)
+    const stage = canvas.parentElement;
+    const stageRect = stage.getBoundingClientRect();
 
-  function computeLayout(){
-    const w = canvas.getBoundingClientRect().width;
-    const h = canvas.getBoundingClientRect().height;
-
-    // We draw (N tiles) plus one sums column on the right and one sums row on the bottom.
+    // We draw (N tiles) plus one sums column and one sums row => (N+1)x(N+1)
     const cols = N + 1;
     const rows = N + 1;
 
-    // Padding around board inside canvas
-    const pad = 6;
-    const usableW = w - pad*2;
-    const usableH = h - pad*2;
+    // Keep small internal padding and gaps (these affect tile size)
+    const pad = 1;
+    const gap = (N === 4) ? 2 : 3;
 
-    // gap between cells
-    const gap = (N === 4) ? 6 : 8;
+    // First compute the "fit" cell size for the stage, then scale it 2x.
+    const usableW = Math.max(50, stageRect.width - pad*2);
+    const usableH = Math.max(50, stageRect.height - pad*2);
+    const fitCellW = (usableW - gap*(cols-1)) / cols;
+    const fitCellH = (usableH - gap*(rows-1)) / rows;
+    const fitCell = Math.floor(Math.min(fitCellW, fitCellH));
 
-    // compute cell size to fit both dimensions (uses maximum size without clipping)
-    const cellW = (usableW - gap*(cols-1)) / cols;
-    const cellH = (usableH - gap*(rows-1)) / rows;
-    const cell = Math.floor(Math.min(cellW, cellH));
+    // Half-size tiles (smaller than fit) and still no clipping
+    const cell = Math.max(10, Math.floor(fitCell * 0.5));
 
-    // center board
+    // Compute board pixel size in CSS pixels
+    const boardW = cell*cols + gap*(cols-1) + pad*2;
+    const boardH = cell*rows + gap*(rows-1) + pad*2;
+
+    // Set CSS size so the canvas can grow; stage will scroll if needed
+    canvas.style.width = boardW + "px";
+    canvas.style.height = boardH + "px";
+
+    // Set actual canvas resolution
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.floor(boardW * dpr));
+    canvas.height = Math.max(1, Math.floor(boardH * dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS pixels
+
+    computeLayout({pad, gap, cell, boardW, boardH});
+    draw();
+  }
+
+  function computeLayout(override){
+    // Canvas is already sized to the board in CSS pixels
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+
+    const cols = N + 1;
+    const rows = N + 1;
+
+    const pad = override?.pad ?? 1;
+    const gap = override?.gap ?? ((N === 4) ? 2 : 3);
+    const cell = override?.cell ?? 40;
+
+    // Centering inside canvas (keeps a tiny margin)
     const boardW = cell*cols + gap*(cols-1);
     const boardH = cell*rows + gap*(rows-1);
     const x0 = Math.floor((w - boardW)/2);
@@ -685,6 +709,7 @@
 </script>
 </body>
 </html>
+
 
 
 
