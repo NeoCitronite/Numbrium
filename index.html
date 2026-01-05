@@ -37,6 +37,10 @@
       padding-top: max(16px, env(safe-area-inset-top));
       padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
+    @media (max-width: 520px), (max-height: 700px){
+      body{ align-items:flex-start; }
+    }
+
     .app{
       width:min(640px, 100%);
       background: rgba(255,255,255,.06);
@@ -137,7 +141,8 @@
       border-radius: 20px;
       border: 1px solid var(--stroke);
       background: rgba(0,0,0,.16);
-      overflow: hidden;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* columns = N tiles + 1 sums column */
@@ -373,17 +378,37 @@
   // Responsive sizing: compute --cell so the whole board fits on screen (no horizontal scrolling)
   function setResponsiveCellSize() {
     const cols = N + 1; // N tiles + 1 sums column
+    const rows = N + 1; // N tile rows + 1 sums row
     const root = document.documentElement;
     const gap = parseInt(getComputedStyle(root).getPropertyValue("--gap"), 10) || 10;
 
-    // Cap width so it doesn't get huge on tablets
-    const maxBoard = Math.min(window.innerWidth * 0.92, 520);
-    const totalGap = gap * (cols - 1);
+    // Width cap so it doesn't get huge on tablets
+    const maxW = Math.min(window.innerWidth * 0.96, 560);
 
-    // Keep a minimum tap target
-    const cell = Math.max(44, Math.floor((maxBoard - totalGap) / cols));
+    // Height available from the top of the board to the bottom of the viewport
+    let maxH = window.innerHeight * 0.96;
+    const wrap = document.querySelector(".boardWrap");
+    if (wrap) {
+      const top = wrap.getBoundingClientRect().top;
+      maxH = window.innerHeight - top - 16; // small bottom margin
+    }
+
+    // Use the smaller dimension so the (N+1)x(N+1) board stays fully visible
+    const maxSide = Math.max(240, Math.min(maxW, maxH));
+
+    const totalGapW = gap * (cols - 1);
+    const totalGapH = gap * (rows - 1);
+
+    const cellW = Math.floor((maxSide - totalGapW) / cols);
+    const cellH = Math.floor((maxSide - totalGapH) / rows);
+
+    // Minimum tap target, but keep within available space
+    const cell = Math.max(36, Math.min(cellW, cellH));
+
     root.style.setProperty("--cell", `${cell}px`);
+    root.style.setProperty("--board-max", `${maxSide}px`);
   }
+
 
 
   function allowedValues() {
@@ -724,4 +749,6 @@
 </script>
 </body>
 </html>
+
+
 
