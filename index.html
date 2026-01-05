@@ -6,7 +6,6 @@
   <title>Numbrium</title>
   <style>
     :root{
-      --cell: 76px;
       --gap: 10px;
       --radius: 16px;
       --shadow: 0 10px 30px rgba(0,0,0,.12);
@@ -15,6 +14,10 @@
       --stroke: rgba(255,255,255,.16);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.70);
+
+      /* Responsive sizing */
+      --board-max: min(92vw, 520px);
+      --cell: 72px; /* fallback; JS recalculates per mode + screen */
     }
     *{ box-sizing:border-box; }
     body{
@@ -29,6 +32,10 @@
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       padding: 24px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
     .app{
       width:min(640px, 100%);
@@ -69,6 +76,25 @@
       align-items:center;
       justify-content:flex-end;
     }
+
+    /* Mobile layout: stack header + left-align controls */
+    header{
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .controls{
+      justify-content: flex-start;
+    }
+    @media (min-width: 700px){
+      header{
+        flex-direction: row;
+        align-items: center;
+      }
+      .controls{
+        justify-content: flex-end;
+      }
+    }
+
     button{
       appearance:none;
       border: 1px solid var(--stroke);
@@ -111,7 +137,7 @@
       border-radius: 20px;
       border: 1px solid var(--stroke);
       background: rgba(0,0,0,.16);
-      overflow-x:auto;
+      overflow: hidden;
     }
 
     /* columns = N tiles + 1 sums column */
@@ -120,6 +146,9 @@
       gap: var(--gap);
       align-items:center;
       justify-items:center;
+      width: var(--board-max);
+      max-width: 100%;
+      justify-content: center;
     }
 
     .tile, .sumCell, .corner{
@@ -136,9 +165,11 @@
     .tile{
       border: 1px solid rgba(255,255,255,.18);
       background: rgba(255,255,255,.10);
-      font-size: 20px;
+      font-size: clamp(16px, 2.6vw, 20px);
       font-weight: 850;
       cursor:pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
       transition: background .2s ease, border-color .2s ease;
       will-change: transform;
     }
@@ -234,8 +265,7 @@
 
     /* on small screens, shrink */
     @media (max-width: 480px){
-      :root{ --cell: 66px; --gap: 8px; }
-      .tile{ font-size: 18px; }
+      :root{ --gap: 8px; --board-max: min(94vw, 520px); }
     }
 
     .copyright{
@@ -339,6 +369,22 @@
 
   // -------- Helpers --------
   const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  // Responsive sizing: compute --cell so the whole board fits on screen (no horizontal scrolling)
+  function setResponsiveCellSize() {
+    const cols = N + 1; // N tiles + 1 sums column
+    const root = document.documentElement;
+    const gap = parseInt(getComputedStyle(root).getPropertyValue("--gap"), 10) || 10;
+
+    // Cap width so it doesn't get huge on tablets
+    const maxBoard = Math.min(window.innerWidth * 0.92, 520);
+    const totalGap = gap * (cols - 1);
+
+    // Keep a minimum tap target
+    const cell = Math.max(44, Math.floor((maxBoard - totalGap) / cols));
+    root.style.setProperty("--cell", `${cell}px`);
+  }
+
 
   function allowedValues() {
     const vals = [];
@@ -645,6 +691,8 @@
     N = MODES[modeKey].N;
     maxAbs = MODES[modeKey].maxAbs;
 
+    setResponsiveCellSize();
+
     easyBtn.classList.toggle("primary", modeKey === "easy");
     medBtn.classList.toggle("primary", modeKey === "medium");
     hardBtn.classList.toggle("primary", modeKey === "hard");
@@ -664,9 +712,16 @@
     if (e.target === modalBackdrop) hideWinModal();
   });
 
+
+  window.addEventListener("resize", () => {
+    setResponsiveCellSize();
+    render();
+  });
+
   // Start
   setMode("easy");
 })();
 </script>
 </body>
 </html>
+
