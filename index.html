@@ -6,18 +6,15 @@
   <title>Numbrium</title>
   <style>
     :root{
-      --gap: 10px;
-      --radius: 16px;
+      --cell: 64px;
+      --gap: 8px;
+      --radius: 14px;
       --shadow: 0 10px 30px rgba(0,0,0,.12);
       --bg: #0b1020;
       --panel: rgba(255,255,255,.08);
       --stroke: rgba(255,255,255,.16);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.70);
-
-      /* Responsive sizing */
-      --board-max: min(92vw, 520px);
-      --cell: 72px; /* fallback; JS recalculates per mode + screen */
     }
     *{ box-sizing:border-box; }
     body{
@@ -168,6 +165,7 @@
     }
 
     .tile{
+      border: 2px solid rgba(255,255,255,.25);
       border: 1px solid rgba(255,255,255,.18);
       background: rgba(255,255,255,.10);
       font-size: clamp(16px, 2.6vw, 20px);
@@ -193,6 +191,7 @@
     .tile.pos2 { color: rgba(120,255,170,.95); }  /* >= +2 */
 
     .sumCell{
+      border: 2px dashed rgba(255,255,255,.30);
       border: 1px dashed rgba(255,255,255,.20);
       background: rgba(255,255,255,.05);
       font-weight: 850;
@@ -270,7 +269,17 @@
 
     /* on small screens, shrink */
     @media (max-width: 480px){
-      :root{ --gap: 8px; --board-max: min(94vw, 520px); }
+      :root{
+      --cell: 64px;
+      --gap: 8px;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.12);
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.16);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+    }
     }
 
     .copyright{
@@ -280,7 +289,11 @@
       font-size: 12px;
       padding: 6px 0 2px;
     }
-  </style>
+  @media (max-width: 480px){
+      .tile{ font-size: 16px; }
+      .sumCell{ font-size: 14px; }
+    }
+</style>
 </head>
 <body>
   <div class="app">
