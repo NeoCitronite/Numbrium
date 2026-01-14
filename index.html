@@ -12,31 +12,11 @@
       --shadow: 0 10px 30px rgba(0,0,0,.12);
       --bg: #0b1020;
       --panel: rgba(255,255,255,.08);
-      --panel-strong: rgba(255,255,255,.12);
-      --accent: #4dd0ff;
-      --accent-soft: rgba(77,208,255,.18);
-      --accent-strong: #00c2ff;
-      --bad: #ff4d6a;
-      --good: #5be37a;
-      --muted: #9ba4c4;
-      --text: #f6f7ff;
-      --tile: rgba(13,18,40,.9);
-      --tile-border: rgba(255,255,255,.08);
-      --tile-selected: rgba(103,180,255,.24);
-      --tile-hover: rgba(255,255,255,.12);
-      --sum-bg: rgba(9,14,35,.98);
-      --sum-border: rgba(255,255,255,.18);
-      --sum-ok: rgba(0,200,140,.14);
-      --sum-bad: rgba(230,80,120,.16);
-      --sum-ok-border: rgba(0,220,160,.9);
-      --sum-bad-border: rgba(250,90,140,.9);
-      --stroke: rgba(255,255,255,.18);
+      --stroke: rgba(255,255,255,.16);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
     }
-
-    *{
-      box-sizing:border-box;
-    }
-
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       min-height:100vh;
@@ -67,90 +47,46 @@
       justify-content:space-between;
       margin-bottom: 14px;
     }
-    .title h1{
-      font-size: 18px;
-      letter-spacing:.02em;
-      margin:0 0 4px;
+    .title{
       display:flex;
-      align-items:center;
-      gap:6px;
+      flex-direction:column;
+      gap:2px;
     }
-    .title h1::before{
-      content:"Σ";
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:22px;
-      height:22px;
-      font-size:14px;
-      border-radius:999px;
-      background: radial-gradient(circle at 30% 20%, #4dd0ff 0%, #0066ff 55%, #020314 100%);
-      box-shadow:0 0 18px rgba(77,208,255,.7);
-      color:#fff;
+    .title h1{
+      font-size:18px;
+      margin:0;
+      letter-spacing:.2px;
     }
     .title p{
       margin:0;
       color: var(--muted);
       font-size: 13px;
     }
-
     .controls{
       display:flex;
+      gap:10px;
       flex-wrap:wrap;
-      gap:6px;
+      align-items:center;
       justify-content:flex-end;
     }
     button{
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(3,7,28,.9);
+      appearance:none;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
       color: var(--text);
-      font-size: 12px;
-      padding: 6px 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
       cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      transition: background .15s ease, border-color .15s ease, transform .08s ease, box-shadow .15s ease;
-      box-shadow: 0 0 0 rgba(0,0,0,0);
+      font-weight: 650;
+      letter-spacing:.2px;
+      transition: transform .06s ease, background .2s ease;
     }
+    button:hover{ background: rgba(255,255,255,.12); }
+    button:active{ transform: translateY(1px); }
     button.primary{
-      background: linear-gradient(135deg, #00c2ff, #4dd0ff);
-      border-color: transparent;
-      color:#021222;
-      font-weight:600;
-      box-shadow:0 0 0 rgba(0,0,0,0.18);
+      background: rgba(120,200,255,.18);
+      border-color: rgba(120,200,255,.30);
     }
-    button.primary:hover{
-      background: linear-gradient(135deg, #22d0ff, #70ddff);
-      transform: translateY(-1px);
-      box-shadow:0 6px 12px rgba(0,0,0,.35);
-    }
-    button:not(.primary):hover{
-      background: rgba(255,255,255,.10);
-      border-color: rgba(120,200,255,.40);
-      transform: translateY(-0.5px);
-      box-shadow:0 4px 10px rgba(0,0,0,.25);
-    }
-    button:active{
-      transform: translateY(1px) scale(.98);
-      box-shadow:0 1px 4px rgba(0,0,0,.5);
-    }
-    button:focus-visible{
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-    button[disabled]{
-      opacity:.7;
-      cursor:default;
-      box-shadow:none;
-      transform:none;
-    }
-    button[disabled]:hover{
-      background: rgba(3,7,28,.9);
-      border-color: rgba(255,255,255,.18);
-    }
-
     .stats{
       display:flex;
       gap:10px;
@@ -179,125 +115,73 @@
     }
 
     /* columns = N tiles + 1 sums column */
-    .board{
+    .grid{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(var(--cell), auto));
       gap: var(--gap);
       align-items:center;
       justify-items:center;
+    }
+
+    .tile, .sumCell, .corner{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: var(--radius);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
       position:relative;
     }
 
     .tile{
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: var(--radius);
-      background: var(--tile);
-      border: 1px solid var(--tile-border);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 22px;
-      font-weight:500;
-      color: #e9ecff;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      font-size: 20px;
+      font-weight: 850;
       cursor:pointer;
-      user-select:none;
-      position:relative;
-      overflow:hidden;
-      box-shadow: 0 10px 18px rgba(0,0,0,.45);
-      transition: background .12s ease, border-color .12s ease, box-shadow .12s ease, transform .1s ease;
+      transition: background .2s ease, border-color .2s ease;
+      will-change: transform;
     }
-    .tile::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: radial-gradient(circle at top left, rgba(255,255,255,.16) 0%, transparent 55%);
-      mix-blend-mode: screen;
-      opacity:.7;
-      pointer-events:none;
-    }
-    .tile:hover{
-      background: var(--tile-hover);
-      border-color: rgba(120,200,255,.5);
-      box-shadow: 0 12px 22px rgba(0,0,0,.55);
-      transform: translateY(-1px);
-    }
+    .tile:hover{ background: rgba(255,255,255,.14); }
     .tile.selected{
-      background: var(--tile-selected);
-      border-color: var(--accent-strong);
-      box-shadow: 0 0 0 1px rgba(77,208,255,.9), 0 12px 24px rgba(0,0,0,.7);
-      transform: translateY(-1px);
-    }
-    .tile.animating{
-      z-index: 2;
+      outline: 3px solid rgba(120,200,255,.55);
+      border-color: rgba(120,200,255,.55);
+      background: rgba(120,200,255,.14);
     }
 
-    /* Value color hints */
-    .tile.zero{
-      color:#b6c0ff;
-    }
-    .tile.pos1{
-      color:#8bedff;
-      text-shadow:0 0 8px rgba(99,227,255,.6);
-    }
-    .tile.pos2{
-      color:#4dffb5;
-      text-shadow:0 0 8px rgba(77,255,181,.6);
-    }
-    .tile.neg1{
-      color:#ff92c0;
-      text-shadow:0 0 8px rgba(255,146,192,.6);
-    }
-    .tile.neg2{
-      color:#ff6e7a;
-      text-shadow:0 0 8px rgba(255,110,122,.7);
-    }
+    /* value coloring: buckets based on sign/magnitude */
+    .tile.neg2 { color: rgba(255,120,120,.95); }  /* <= -2 */
+    .tile.neg1 { color: rgba(255,160,160,.95); }  /* -1 */
+    .tile.zero { color: rgba(255,255,255,.92); }  /* 0 */
+    .tile.pos1 { color: rgba(170,255,190,.95); }  /* +1 */
+    .tile.pos2 { color: rgba(120,255,170,.95); }  /* >= +2 */
 
     .sumCell{
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: var(--radius);
-      background: var(--sum-bg);
-      border: 1px dashed var(--sum-border);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 16px;
-      font-weight:500;
+      border: 1px dashed rgba(255,255,255,.20);
+      background: rgba(255,255,255,.05);
+      font-weight: 850;
       color: var(--muted);
-      box-shadow: 0 10px 16px rgba(0,0,0,.5);
-      user-select:none;
+      font-size: 16px;
     }
     .sumCell.ok{
-      background: linear-gradient(135deg, rgba(0,200,140,.18), rgba(0,110,60,.4));
-      border-style:solid;
-      border-color: var(--sum-ok-border);
-      color: #b3ffdf;
-      text-shadow:0 0 8px rgba(55,230,170,.9);
+      border-style: solid;
+      border-color: rgba(170,255,190,.40);
+      color: rgba(170,255,190,.95);
+      background: rgba(170,255,190,.08);
     }
     .sumCell.bad{
-      background: linear-gradient(135deg, rgba(230,60,110,.2), rgba(128,15,45,.5));
-      border-style:solid;
-      border-color: var(--sum-bad-border);
-      color:#ffc8da;
-      text-shadow:0 0 7px rgba(255,120,160,.8);
+      border-style: solid;
+      border-color: rgba(255,160,160,.40);
+      color: rgba(255,160,160,.95);
+      background: rgba(255,160,160,.08);
     }
 
     .corner{
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: var(--radius);
-      background: radial-gradient(circle at 20% 15%, rgba(255,255,255,.35), transparent 60%),
-                  linear-gradient(135deg, rgba(77,208,255,.26), rgba(0,72,120,.85));
-      border: 1px solid rgba(120,200,255,.7);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-      font-size:22px;
-      color:#ecf6ff;
-      box-shadow: 0 10px 22px rgba(0,0,0,.7), 0 0 14px rgba(77,208,255,.8);
-      user-select:none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: rgba(255,255,255,.35);
+      font-weight: 900;
+      font-size: 12px;
     }
 
     .hint{
@@ -315,69 +199,44 @@
       color: var(--text);
     }
 
-    /*
-      Modal
-    */
+    /* MODAL */
     .modalBackdrop{
-      position:fixed;
-      inset:0;
-      background: rgba(3,7,25,.86);
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:20;
+      padding: 24px;
     }
     .modal{
-      background: rgba(15,24,61,.96);
-      border-radius:20px;
-      padding:18px 18px 16px;
-      border:1px solid rgba(120,200,255,.45);
-      max-width:320px;
-      width:calc(100% - 40px);
-      box-shadow:0 16px 40px rgba(0,0,0,.8);
-      text-align:center;
+      width: min(420px, 100%);
+      background: rgba(18,24,46,.92);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
     }
-    .modal h2{
-      margin:0 0 4px;
-      font-size:18px;
+    .modal h2{ margin: 0 0 6px; font-size: 20px; }
+    .modal p{ margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+    .modal .row{
       display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-    }
-    .modal p{
-      margin:0 0 14px;
-      color: var(--muted);
-      font-size:14px;
-    }
-    .modalActions{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-    }
-    .modalActions button{
-      min-width:100px;
+      gap: 10px;
+      justify-content:flex-end;
     }
 
-    footer{
-      margin-top: 10px;
-      font-size: 11px;
-      color: rgba(175,184,220,.85);
-      text-align:center;
+    /* swap animation helper */
+    .tile.animating{
+      transition: transform 220ms ease;
+      z-index: 10;
     }
-
-    @media (max-width: 480px){
-      :root{
-        --cell: 68px;
-        --gap: 8px;
-      }
-      header{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .controls{
-        justify-content:flex-start;
-      }
+    .copyright{
+      margin-top: 14px;
+      text-align: center;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+      padding: 6px 0 2px;
     }
   </style>
 </head>
@@ -393,7 +252,6 @@
         <button id="easyBtn" class="primary">Easy (3×3, −1..+1)</button>
         <button id="medBtn">Medium (4×4, −2..+2)</button>
         <button id="hardBtn">Hard (4×4, −4..+4)</button>
-        <button id="veryHardBtn">Very Hard (5×5, −4..+4)</button>
         <button id="newBtn">New Puzzle</button>
       </div>
     </header>
@@ -406,7 +264,7 @@
     </div>
 
     <div class="boardWrap">
-      <div id="grid" class="board" aria-label="Numbrium grid"></div>
+      <div id="grid" class="grid" aria-label="puzzle grid"></div>
     </div>
 
     <div class="hint">
@@ -421,13 +279,17 @@
   <div id="modalBackdrop" class="modalBackdrop" role="dialog" aria-modal="true">
     <div class="modal">
       <h2>🎉 You win!</h2>
-      <p id="winText">Solved!</p>
-      <div class="modalActions">
-        <button id="playAgainBtn" class="primary">Play again</button>
+      <p id="winText">All rows and columns sum to zero.</p>
+      <div class="row">
         <button id="closeModalBtn">Close</button>
+        <button id="playAgainBtn" class="primary">Play again</button>
       </div>
     </div>
+    
+
   </div>
+
+
 
 <script>
 (() => {
@@ -435,21 +297,20 @@
   // Easy: 3x3, maxAbs=1
   // Medium: 4x4, maxAbs=2
   // Hard: 4x4, maxAbs=4
-  // Very Hard: 5x5, maxAbs=4
   const MODES = {
-    easy:     { name:"Easy",       N:3, maxAbs:1, shuffle: 70  },
-    medium:   { name:"Medium",     N:4, maxAbs:2, shuffle: 180 },
-    hard:     { name:"Hard",       N:4, maxAbs:4, shuffle: 260 },
-    veryHard: { name:"Very Hard",  N:5, maxAbs:4, shuffle: 420 },
+    easy:  { name:"Easy",   N:3, maxAbs:1, shuffle: 70  },
+    medium:{ name:"Medium", N:4, maxAbs:2, shuffle: 180 },
+    hard:  { name:"Hard",   N:4, maxAbs:4, shuffle: 260 },
   };
 
   // -------- State --------
   let modeKey = "easy";
   let N = MODES[modeKey].N;
   let maxAbs = MODES[modeKey].maxAbs;
-  let board = [];            // NxN array of integers
-  let selected = null;       // {r,c} or null
+
+  let board = [];            // NxN numbers
   let moves = 0;
+  let selected = null;       // {r,c} or null
   let busy = false;          // block input during animation
 
   // -------- DOM --------
@@ -462,7 +323,6 @@
   const easyBtn = document.getElementById("easyBtn");
   const medBtn  = document.getElementById("medBtn");
   const hardBtn = document.getElementById("hardBtn");
-  const veryHardBtn = document.getElementById("veryHardBtn");
   const newBtn  = document.getElementById("newBtn");
 
   const modalBackdrop = document.getElementById("modalBackdrop");
@@ -471,6 +331,53 @@
   const playAgainBtn = document.getElementById("playAgainBtn");
 
   // -------- Helpers --------
+  function setResponsiveSizing() {
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width : window.innerWidth;
+    const vh = vv ? vv.height : window.innerHeight;
+
+    const boardWrapEl = document.querySelector(".boardWrap");
+    const hintEl = document.querySelector(".hint");
+    const footerEl = document.querySelector(".copyright");
+
+    if (!boardWrapEl) return;
+
+    const wrapStyles = getComputedStyle(boardWrapEl);
+    const padX = parseFloat(wrapStyles.paddingLeft) + parseFloat(wrapStyles.paddingRight);
+    const padY = parseFloat(wrapStyles.paddingTop) + parseFloat(wrapStyles.paddingBottom);
+
+    // Content box available for the grid inside the board wrapper
+    const maxBoardWidth = Math.max(0, boardWrapEl.clientWidth - padX);
+
+    // Estimate how much vertical space is below the board (hint + footer + breathing room)
+    const below =
+      (hintEl ? hintEl.getBoundingClientRect().height : 0) +
+      (footerEl ? footerEl.getBoundingClientRect().height : 0) +
+      32;
+
+    // Available height from the top of the boardWrap to the bottom of the viewport
+    const top = boardWrapEl.getBoundingClientRect().top;
+    const maxBoardHeight = Math.max(0, vh - top - below - 16);
+
+    const cellsAcross = N + 1; // tiles + sums column
+    const cellsDown = N + 1;   // tiles + sums row
+
+    const gapRatio = 0.12;     // gap relative to cell size
+    const factorW = cellsAcross + (cellsAcross - 1) * gapRatio;
+    const factorH = cellsDown + (cellsDown - 1) * gapRatio;
+
+    const cellByWidth = Math.floor(maxBoardWidth / factorW);
+    const cellByHeight = Math.floor(maxBoardHeight / factorH);
+
+    // Clamp to a sensible range
+    const cellSize = Math.max(34, Math.min(cellByWidth, cellByHeight, 110));
+    const gap = Math.max(6, Math.floor(cellSize * gapRatio));
+
+    document.documentElement.style.setProperty("--cell", `${cellSize}px`);
+    document.documentElement.style.setProperty("--gap", `${gap}px`);
+  }
+
+
   const randPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   function allowedValues() {
@@ -509,40 +416,41 @@
         }
       }
 
-      // Fix last column so each row sums to 0
+      // Set last column to make each of first N-1 rows sum to 0
       let ok = true;
       for (let r=0; r<N-1; r++) {
-        const partial = b[r].slice(0, N-1).reduce((a,v)=>a+v,0);
-        const needed = -partial;
-        if (!inRange(needed)) { ok = false; break; }
-        b[r][N-1] = needed;
+        const s = b[r].slice(0, N-1).reduce((a,v)=>a+v,0);
+        const need = -s;
+        if (!inRange(need)) { ok = false; break; }
+        b[r][N-1] = need;
       }
       if (!ok) continue;
 
-      // Fix last row (for columns 0..N-2)
-      const colSumsNoLastRow = Array.from({length:N}, () => 0);
-      for (let r=0; r<N-1; r++) {
-        for (let c=0; c<N; c++) colSumsNoLastRow[c] += b[r][c];
-      }
-
+      // Set last row to make each of first N-1 cols sum to 0
       for (let c=0; c<N-1; c++) {
-        const needed = -colSumsNoLastRow[c];
-        if (!inRange(needed)) { ok = false; break; }
-        b[N-1][c] = needed;
+        let s = 0;
+        for (let r=0; r<N-1; r++) s += b[r][c];
+        const need = -s;
+        if (!inRange(need)) { ok = false; break; }
+        b[N-1][c] = need;
       }
       if (!ok) continue;
 
-      // Determine bottom-right cell to satisfy both last row & last column
-      const lastRowSumExceptLast = b[N-1].slice(0, N-1).reduce((a,v)=>a+v,0);
-      const neededRow = -lastRowSumExceptLast;
+      // Bottom-right must satisfy both last row and last col
+      let colSumLast = 0;
+      for (let r=0; r<N-1; r++) colSumLast += b[r][N-1];
+      const needFromCol = -colSumLast;
 
-      const lastColSumExceptLast = colSumsNoLastRow[N-1];
-      const neededCol = -lastColSumExceptLast;
+      let rowSumLast = 0;
+      for (let c=0; c<N-1; c++) rowSumLast += b[N-1][c];
+      const needFromRow = -rowSumLast;
 
-      if (neededRow !== neededCol || !inRange(neededRow)) continue;
-      b[N-1][N-1] = neededRow;
+      if (needFromCol !== needFromRow) continue;
+      if (!inRange(needFromCol)) continue;
 
-      // avoid trivial all-zero board
+      b[N-1][N-1] = needFromCol;
+
+      // avoid trivial all-zeros
       if (b.flat().every(v => v === 0)) continue;
 
       if (isWin(b)) return b;
@@ -558,68 +466,63 @@
     }
     if (N === 4 && maxAbs >= 2) {
       return [
-        [  2,  0, -2,  0],
-        [  0,  2,  0, -2],
-        [ -2,  0,  2,  0],
-        [  0, -2,  0,  2]
+        [ 2,  0, -2,  0],
+        [ 0,  2,  0, -2],
+        [-2,  0,  2,  0],
+        [ 0, -2,  0,  2]
       ];
     }
-    if (N === 4 && maxAbs >= 4) {
-      return [
-        [  4,  0, -4,  0],
-        [  0,  4,  0, -4],
-        [ -4,  0,  4,  0],
-        [  0, -4,  0,  4]
-      ];
-    }
-    if (N === 5 && maxAbs >= 4) {
-      return [
-        [  4,  0, -4,  0,  0],
-        [  0,  4,  0, -4,  0],
-        [ -4,  0,  4,  0,  0],
-        [  0, -4,  0,  4,  0],
-        [  0,  0,  0,  0,  0]
-      ];
-    }
-    // Generic small non-trivial fallback (for unexpected combos)
-    const fb = Array.from({length:N}, () => Array.from({length:N}, () => 0));
-    if (N >= 2 && maxAbs > 0) {
-      const m = Math.min(maxAbs, 4);
-      fb[0][0] =  m;
-      fb[0][1] = -m;
-      fb[1][0] = -m;
-      fb[1][1] =  m;
-    }
-    return fb;
+    // 4x4 valid for maxAbs >= 4
+    return [
+      [ 4,  0, -4,  0],
+      [ 0,  4,  0, -4],
+      [-4,  0,  4,  0],
+      [ 0, -4,  0,  4]
+    ];
   }
 
   // Shuffle using adjacent swaps so puzzle is always solvable
   function shuffleFromSolved(solved, swapsCount) {
     const b = solved.map(row => row.slice());
-
-    let r = Math.floor(Math.random()*N);
-    let c = Math.floor(Math.random()*N);
-
     const dirs = [
-      [1,0],[-1,0],[0,1],[0,-1]
+      {dr:1, dc:0},
+      {dr:-1, dc:0},
+      {dr:0, dc:1},
+      {dr:0, dc:-1},
     ];
 
-    for (let k=0; k<swapsCount; k++) {
-      const [dr,dc] = randPick(dirs);
-      const nr = r+dr, nc = c+dc;
-      if (nr<0 || nr>=N || nc<0 || nc>=N) continue;
-
-      const tmp = b[r][c];
-      b[r][c] = b[nr][nc];
-      b[nr][nc] = tmp;
-
-      r = nr; c = nc;
+    function swapCells(r1,c1,r2,c2){
+      const t = b[r1][c1];
+      b[r1][c1] = b[r2][c2];
+      b[r2][c2] = t;
     }
 
+    for (let k=0; k<swapsCount; k++){
+      const r = Math.floor(Math.random()*N);
+      const c = Math.floor(Math.random()*N);
+      const d = randPick(dirs);
+      const r2 = r + d.dr, c2 = c + d.dc;
+      if (r2<0 || r2>=N || c2<0 || c2>=N) continue;
+      swapCells(r,c,r2,c2);
+    }
+
+    // avoid starting solved
+    if (isWin(b)) return shuffleFromSolved(solved, swapsCount + N*N);
     return b;
   }
 
-  // Render board into DOM
+  // -------- Rendering --------
+  function valueText(v){
+    return v > 0 ? `+${v}` : String(v);
+  }
+  function tileBucketClass(v){
+    if (v <= -2) return "neg2";
+    if (v === -1) return "neg1";
+    if (v === 0)  return "zero";
+    if (v === 1)  return "pos1";
+    return "pos2"; // >= +2
+  }
+
   function render() {
     gridEl.innerHTML = "";
     gridEl.style.gridTemplateColumns = `repeat(${N + 1}, var(--cell))`;
@@ -627,28 +530,20 @@
     const rowSums = computeRowSums(board);
     const colSums = computeColSums(board);
 
-    // tiles + row sums
     for (let r=0; r<N; r++) {
       for (let c=0; c<N; c++) {
-        const value = board[r][c];
-        const tile = document.createElement("div");
-        tile.className = "tile";
-        tile.dataset.r = r;
-        tile.dataset.c = c;
+        const cell = document.createElement("div");
+        cell.className = `tile ${tileBucketClass(board[r][c])}`;
+        cell.textContent = valueText(board[r][c]);
 
-        let cls = "tile";
-        if (value === 0) cls += " zero";
-        else if (value > 0 && Math.abs(value) === 1) cls += " pos1";
-        else if (value > 0) cls += " pos2";
-        else if (value < 0 && Math.abs(value) === 1) cls += " neg1";
-        else if (value < 0) cls += " neg2";
-        tile.className = cls;
+        if (selected && selected.r === r && selected.c === c) {
+          cell.classList.add("selected");
+        }
 
-        tile.textContent = value > 0 ? `+${value}` : `${value}`;
-
-        if (selected && selected.r === r && selected.c === c) tile.classList.add("selected");
-        tile.addEventListener("click", onTileClick);
-        gridEl.appendChild(tile);
+        cell.dataset.r = String(r);
+        cell.dataset.c = String(c);
+        cell.addEventListener("click", onTileClick);
+        gridEl.appendChild(cell);
       }
 
       // Row sum on the right
@@ -679,29 +574,11 @@
     movesLabel.textContent = String(moves);
     sizeLabel.textContent = `${N}×${N}`;
     modeLabel.textContent = MODES[modeKey].name;
-    rangeLabel.textContent = `${maxAbs === 0 ? "0" : `−${maxAbs}..+${maxAbs}`}`;
+    rangeLabel.textContent = `−${maxAbs}..+${maxAbs}`;
   }
 
-  function setMode(newKey) {
-    modeKey = newKey;
-    N = MODES[modeKey].N;
-    maxAbs = MODES[modeKey].maxAbs;
-
-    easyBtn.classList.remove("primary");
-    medBtn.classList.remove("primary");
-    hardBtn.classList.remove("primary");
-    veryHardBtn.classList.remove("primary");
-
-    if (modeKey === "easy")      easyBtn.classList.add("primary");
-    else if (modeKey === "medium")   medBtn.classList.add("primary");
-    else if (modeKey === "hard")     hardBtn.classList.add("primary");
-    else if (modeKey === "veryHard") veryHardBtn.classList.add("primary");
-
-    newGame();
-  }
-
+  // -------- Interaction + Animation --------
   function isAdjacent(a, b) {
-    if (!a || !b) return false;
     const dr = Math.abs(a.r - b.r);
     const dc = Math.abs(a.c - b.c);
     return (dr + dc) === 1;
@@ -720,29 +597,20 @@
     if (!elA || !elB) { busy = false; return; }
 
     const rootStyles = getComputedStyle(document.documentElement);
-    const cellSize = parseFloat(rootStyles.getPropertyValue("--cell")) || 76;
-    const gap = parseFloat(rootStyles.getPropertyValue("--gap")) || 10;
-    const delta = cellSize + gap;
+    const cell = parseInt(rootStyles.getPropertyValue("--cell"), 10);
+    const gap  = parseInt(rootStyles.getPropertyValue("--gap"), 10);
 
-    const dr = b.r - a.r;
-    const dc = b.c - a.c;
-
-    const offsetA = `translate(${dc * delta}px, ${dr * delta}px)`;
-    const offsetB = `translate(${-dc * delta}px, ${-dr * delta}px)`;
-
-    elA.style.transition = "transform 0.22s ease";
-    elB.style.transition = "transform 0.22s ease";
+    const dx = (b.c - a.c) * (cell + gap);
+    const dy = (b.r - a.r) * (cell + gap);
 
     elA.classList.add("animating");
     elB.classList.add("animating");
 
-    requestAnimationFrame(() => {
-      elA.style.transform = offsetA;
-      elB.style.transform = offsetB;
-    });
+    elA.style.transform = `translate(${dx}px, ${dy}px)`;
+    elB.style.transform = `translate(${-dx}px, ${-dy}px)`;
 
     setTimeout(() => {
-      // Swap in data
+      // swap values
       const t = board[a.r][a.c];
       board[a.r][a.c] = board[b.r][b.c];
       board[b.r][b.c] = t;
@@ -809,18 +677,27 @@
     const shuffleCount = MODES[modeKey].shuffle;
     board = shuffleFromSolved(solved, shuffleCount);
 
-    if (isWin(board)) {
-      board = shuffleFromSolved(solved, shuffleCount + 40);
-    }
-
     render();
   }
 
-  // -------- Events --------
+  function setMode(key){
+    modeKey = key;
+    N = MODES[modeKey].N;
+    maxAbs = MODES[modeKey].maxAbs;
+
+
+    setResponsiveSizing();
+    easyBtn.classList.toggle("primary", modeKey === "easy");
+    medBtn.classList.toggle("primary", modeKey === "medium");
+    hardBtn.classList.toggle("primary", modeKey === "hard");
+
+    newGame();
+  }
+
+  // -------- Wire up UI --------
   easyBtn.addEventListener("click", () => setMode("easy"));
   medBtn.addEventListener("click",  () => setMode("medium"));
   hardBtn.addEventListener("click", () => setMode("hard"));
-  veryHardBtn.addEventListener("click", () => setMode("veryHard"));
   newBtn.addEventListener("click", newGame);
 
   closeModalBtn.addEventListener("click", hideWinModal);
@@ -829,11 +706,17 @@
     if (e.target === modalBackdrop) hideWinModal();
   });
 
+  window.addEventListener("resize", () => {
+    setResponsiveSizing();
+    render();
+  });
+
   // Start
   setMode("easy");
 })();
 </script>
 </body>
 </html>
+
 
 
